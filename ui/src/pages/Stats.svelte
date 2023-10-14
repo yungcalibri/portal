@@ -25,6 +25,11 @@
 
   let postsByDate = new Map();
   let postersByDate = new Map();
+  let csv = 'date,postCount,uniquePosters';
+  let blob = new Blob();
+  let downloadURL = '';
+  let dataLoaded = false;
+
   state.subscribe((s) => {
     if (!s.isLoaded) return;
     if (s.isLoaded && !getGlobalFeed()) {
@@ -60,11 +65,11 @@
       if (t < cutoff) {
         return;
       }
-      const monthDate = `${t.getUTCMonth()}/${t.getUTCDate()}`;
-      if (postsByDate.has(monthDate)) {
-        postsByDate.set(monthDate, postsByDate.get(monthDate).add(r));
+      const ymd = t.toISOString().split('T')[0];
+      if (postsByDate.has(ymd)) {
+        postsByDate.set(ymd, postsByDate.get(ymd).add(r));
       } else {
-        postsByDate.set(monthDate, new Set([r]));
+        postsByDate.set(ymd, new Set([r]));
       }
     })
 
@@ -73,8 +78,15 @@
       postersByDate.set(postDate, posters.size)
     });
 
-    console.log(postsByDate)
-    console.log(postersByDate)
+    postsByDate.forEach((postSet, postDate) => {
+      const line =
+        `${postDate},${postSet.size},${postersByDate.get(postDate)}`;
+      csv = `${csv}\r\n${(line)}`;
+    });
+
+    blob = new Blob(["\ufeff", csv]);
+    downloadURL = URL.createObjectURL(blob);
+    dataLoaded = true;
 
     if (
       feed[0] &&
@@ -88,35 +100,40 @@
 <div class="grid grid-cols-12 gap-8 mb-4 h-full">
   <div class="flex flex-col gap-8 rounded-t-2xl col-span-12 md:col-span-7">
     Hi we're doing stats
-    <table>
-      <thead>
-        <tr>
-          <th>
-            Date
-          </th>
-          <th>
-            Post Count
-          </th>
-          <th>
-            Unique Posters
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each [...postsByDate.keys()] as date (date)}
+    {#if dataLoaded}
+      <a href={downloadURL} download=portal_stats.csv>
+        Download .csv
+      </a>
+      <table>
+        <thead>
           <tr>
-            <td class="border padding-2">
-              {date}
-            </td>
-            <td class="border padding-2">
-              {postsByDate.get(date).size}
-            </td>
-            <td class="border padding-2">
-              {postersByDate.get(date)}
-            </td>
+            <th>
+              Date
+            </th>
+            <th>
+              Post Count
+            </th>
+            <th>
+              Unique Posters
+            </th>
           </tr>
-        {/each}
-      </tbody>      
-    </table>
+        </thead>
+        <tbody>
+          {#each [...postsByDate.keys()] as date (date)}
+            <tr>
+              <td class="border padding-2">
+                {date}
+              </td>
+              <td class="border padding-2">
+                {postsByDate.get(date).size}
+              </td>
+              <td class="border padding-2">
+                {postersByDate.get(date)}
+              </td>
+            </tr>
+          {/each}
+        </tbody>      
+      </table>
+    {/if}
   </div>
 </div>
