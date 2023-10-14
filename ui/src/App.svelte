@@ -21,6 +21,7 @@
     Group,
     Other,
     Search,
+    Stats,
   } from './pages';
   import { Collection, EditCollection } from './pages/Collection';
   import { Curator, EditCurator } from './pages/Curator';
@@ -30,6 +31,7 @@
     '/feed': Feed,
     '/activity': Activity,
     '/explore': Explore,
+    '/stats': Stats,
     '/group/:host/:cord': Group,
     '/app/*': App,
     '/other/*': Other,

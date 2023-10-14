@@ -7,3 +7,4 @@ export { default as Feed } from './Feed.svelte';
 export { default as Group } from './Group.svelte';
 export { default as Other } from './Other.svelte';
 export { default as Search } from './Search.svelte';
+export { default as Stats } from './Stats.svelte';
